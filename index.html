@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Generatore di password "simpatiche" — Passphrase xkcd-style</title>
+<meta name="description" content="Generatore di passphrase in italiano che combina parole da più dizionari. Tutto client-side, non memorizziamo nulla." />
+<style>
+  :root{
+    --bg:#0f1724; --card:#0b1220; --accent:#7dd3fc; --muted:#94a3b8; --glass: rgba(255,255,255,0.03);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%}
+  body{
+    margin:0; background: linear-gradient(180deg,#071127 0%, #071623 60%); color:#e6eef8;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .wrap{
+    width:100%; max-width:980px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:14px; box-shadow: 0 10px 30px rgba(1,8,24,0.7); padding:20px; backdrop-filter: blur(6px);
+  }
+  header{display:flex; gap:16px; align-items:center; margin-bottom:12px; flex-wrap:wrap}
+  header h1{font-size:1.15rem; margin:0}
+  header p{margin:0; color:var(--muted); font-size:0.9rem}
+  .controls{display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:12px; margin-top:12px}
+  label{display:block; font-size:0.85rem; color:var(--muted); margin-bottom:6px}
+  .control{background:var(--glass); padding:10px; border-radius:10px}
+  input[type=range]{width:100%}
+  .row{display:flex; gap:8px; align-items:center}
+  .button-row{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
+  button{background:linear-gradient(90deg,var(--accent),#60a5fa); color:#06263a; border:0; padding:10px 12px; border-radius:10px; font-weight:600; cursor:pointer}
+  button.ghost{background:transparent; color:var(--accent); border:1px solid rgba(125,211,252,0.12)}
+  .output{margin-top:18px; display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .passcard{flex:1; min-width:220px; background:rgba(255,255,255,0.02); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.03)}
+  .pass{font-family: ui-monospace,SFMono-Regular,Menlo,monospace; font-size:1.05rem; word-break:break-word}
+  .meta{font-size:0.85rem; color:var(--muted); margin-top:8px}
+  .notice{margin-top:12px; font-size:0.9rem; color:#c7f9ff; background:rgba(125,211,252,0.04); padding:10px; border-radius:10px}
+  footer{display:grid; grid-template-columns: 1fr 320px; gap:16px; margin-top:18px}
+  @media (max-width:900px){ footer{grid-template-columns:1fr} }
+  .comic-placeholder{background:#081223; border-radius:10px; padding:12px; min-height:160px; display:flex; flex-direction:column; gap:8px; align-items:center; justify-content:center; border:1px dashed rgba(255,255,255,0.03)}
+  .comic-placeholder img{max-width:100%; max-height:220px; object-fit:contain; border-radius:6px}
+  .lorem{background:rgba(255,255,255,0.02); padding:12px; border-radius:10px; color:var(--muted); font-size:0.95rem; line-height:1.4}
+  small.dim{display:block; color:var(--muted); margin-top:6px}
+  .flex-between{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .tag{background:rgba(125,211,252,0.06); color:var(--accent); padding:4px 8px; border-radius:999px; font-weight:600; font-size:0.85rem}
+  .switch{display:inline-flex; gap:8px; align-items:center}
+  input[type=checkbox]{transform:scale(1.08)}
+</style>
+</head>
+<body>
+  <div class="wrap" role="application" aria-label="Generatore passphrase">
+    <header>
+      <div>
+        <h1>Generatore di passphrase simpatiche (xkcd-style)</h1>
+        <p>Frasi composte da <strong>soggetto + verbo + complemento</strong> usando dizionari Napolux. Tutto client-side: le password non vengono memorizzate sul server.</p>
+      </div>
+      <div style="margin-left:auto" class="tag">Offline-friendly</div>
+    </header>
+
+    <section class="controls" aria-hidden="false">
+      <div class="control">
+        <label for="mode">Modalità</label>
+        <div class="row">
+          <select id="mode" aria-label="Seleziona modalità">
+            <option value="phrase">Frase completa (sogg verbo comp)</option>
+            <option value="words">Solo parole (x parole)</option>
+          </select>
+          <small class="dim">Scegli la struttura della password</small>
+        </div>
+      </div>
+
+      <div class="control">
+        <label for="wordsCount">Numero parole / componenti: <strong id="wordsCountLabel">4</strong></label>
+        <input id="wordsCount" type="range" min="3" max="8" value="4" />
+      </div>
+
+      <div class="control">
+        <label>Opzioni aggiuntive</label>
+        <div class="row" style="flex-direction:column;align-items:flex-start">
+          <label class="switch"><input id="addNumber" type="checkbox" /> Aggiungi numero</label>
+          <label class="switch"><input id="addSymbol" type="checkbox" /> Aggiungi simbolo</label>
+          <label class="switch"><input id="randomCase" type="checkbox" checked /> Maiuscole casuali</label>
+          <label class="switch"><input id="useRemote" type="checkbox" checked /> Carica dizionari remoti (GitHub)</label>
+        </div>
+      </div>
+
+      <div class="control">
+        <label for="separator">Separatore</label>
+        <div class="row">
+          <input id="separator" type="text" value=" " maxlength="3" style="width:80px; padding:6px; border-radius:6px; border:0; background:rgba(255,255,255,0.02)" />
+          <small class="dim">Usato tra parole (può essere spazio, -, _ o nulla)</small>
+        </div>
+      </div>
+
+      <div class="control">
+        <label>Azioni</label>
+        <div class="button-row">
+          <button id="generate">Genera</button>
+          <button id="copy" class="ghost">Copia</button>
+          <button id="entropy" class="ghost">Stima Entropia</button>
+        </div>
+        <small class="dim">La generazione usa <code>crypto.getRandomValues</code> — non inviamo niente al server.</small>
+      </div>
+    </section>
+
+    <section class="output" aria-live="polite">
+      <div class="passcard">
+        <div class="flex-between">
+          <div>
+            <div style="font-size:0.85rem;color:var(--muted)">Passphrase / Password</div>
+            <div id="pass" class="pass" style="margin-top:6px">— premi Genera —</div>
+          </div>
+          <div style="text-align:right">
+            <div id="length" class="meta">Lunghezza: —</div>
+            <div id="bits" class="meta">Entropia stimata: —</div>
+          </div>
+        </div>
+
+        <div class="meta" id="sourceInfo" style="margin-top:10px">Dizionari: caricamento non ancora effettuato.</div>
+      </div>
+
+      <div style="min-width:200px">
+        <div class="notice">
+          <strong>Privacy & Sicurezza</strong>
+          <div style="font-size:0.9rem; color:var(--muted); margin-top:6px">
+            Tutto avviene sul tuo browser. Le password non vengono inviate né memorizzate su server da questo file.
+            Se disabiliti "Carica dizionari remoti", verranno usate liste interne (stesso comportamento offline).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="lorem">
+        <h3>Spazio per spiegazione / vignetta</h3>
+        <p><em>Lorem ipsum</em> — sostituisci questo testo con la spiegazione che preferisci riguardo al metodo, consigli di sicurezza o la vignetta xkcd.</p>
+        <p style="font-size:0.9rem;color:var(--muted)">Suggerimento: spiega perché passphrase lunghe e memorabili (es. frase soggetto-verbo-complemento) sono forti e facili da ricordare.</p>
+      </div>
+
+      <div class="comic-placeholder" id="comicArea" aria-hidden="false">
+        <div style="width:100%; text-align:center">
+          <strong>Vignetta (qui)</strong>
+          <div style="font-size:0.85rem;color:var(--muted)">Se vuoi puoi inserire l'immagine della vignetta xkcd o altra immagine.</div>
+        </div>
+        <img id="comicImg" alt="vignetta" src="" style="display:none" />
+        <div style="display:flex; gap:8px; margin-top:6px; width:100%; justify-content:center">
+          <button id="loadXkcd" class="ghost" title="Carica xkcd 936">Carica xkcd (936)</button>
+          <button id="clearComic" class="ghost">Rimuovi</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+<script>
+/*
+  Generatore passphrase "simpatiche"
+  - Prova a caricare i 4 dizionari raw GitHub indicati dall'utente
+  - Se fallisce, usa fallback locali
+  - Costruisce Soggetto + Verbo + Complemento oppure "x parole"
+  - Usa crypto.getRandomValues per RNG
+*/
+
+const REMOTE_URLS = {
+  nouns: 'https://github.com/napolux/paroleitaliane/raw/refs/heads/main/paroleitaliane/280000_parole_italiane.txt',
+  names: 'https://raw.githubusercontent.com/napolux/paroleitaliane/refs/heads/main/paroleitaliane/9000_nomi_propri.txt',
+  uniques: 'https://raw.githubusercontent.com/napolux/paroleitaliane/refs/heads/main/paroleitaliane/parole_uniche.txt',
+  verbs: 'https://raw.githubusercontent.com/napolux/paroleitaliane/refs/heads/main/paroleitaliane/coniugazione_verbi.txt'
+};
+
+// Fallback minimali se fetch remoto non disponibile
+const FALLBACK = {
+  nouns: ["gatto","tavolo","luna","bicicletta","computer","pizza","mare","montagna","libro","bottiglia"],
+  names: ["Luca","Giulia","Marco","Sara","Francesco","Anna","Paolo","Laura","Matteo","Chiara"],
+  uniques: ["arcobaleno","scintilla","pasticcio","frittella","zingaro","bislacco","baleno","soprabito","furia","sogno"],
+  verbs: ["mangia","corre","sogna","scrive","rimbalza","abbaia","studia","ride","canta","salta"]
+};
+
+let dict = {
+  nouns: [], names: [], uniques: [], verbs: []
+};
+
+const byId = id => document.getElementById(id);
+const wordsCount = byId('wordsCount');
+const wordsCountLabel = byId('wordsCountLabel');
+const generateBtn = byId('generate');
+const passEl = byId('pass');
+const bitsEl = byId('bits');
+const lengthEl = byId('length');
+const sourceInfo = byId('sourceInfo');
+const copyBtn = byId('copy');
+const entropyBtn = byId('entropy');
+const modeSel = byId('mode');
+const separatorInput = byId('separator');
+const addNumber = byId('addNumber');
+const addSymbol = byId('addSymbol');
+const randomCase = byId('randomCase');
+const useRemote = byId('useRemote');
+
+const comicImg = byId('comicImg');
+const loadXkcd = byId('loadXkcd');
+const clearComic = byId('clearComic');
+
+wordsCount.addEventListener('input', () => { wordsCountLabel.textContent = wordsCount.value; });
+wordsCountLabel.textContent = wordsCount.value;
+
+// secure random integer [0, max)
+function secureRandInt(max){
+  if (max <= 0) return 0;
+  const u32 = new Uint32Array(1);
+  crypto.getRandomValues(u32);
+  // use modulo but avoid bias by rejecting big values? for simplicity for this use-case it's acceptable
+  return u32[0] % max;
+}
+
+function pickRandom(arr){
+  if (!arr || arr.length===0) return '';
+  return arr[secureRandInt(arr.length)];
+}
+
+function shuffleString(s){
+  // simple fisher-yates on array of chars using secure RNG
+  const arr = Array.from(s);
+  for (let i = arr.length-1; i>0; i--){
+    const j = secureRandInt(i+1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.join('');
+}
+
+function applyRandomCase(word){
+  // randomly uppercase some letters
+  if (!randomCase.checked) return word;
+  return Array.from(word).map(ch => (/[a-zA-Z]/.test(ch) && secureRandInt(2)) ? ch.toUpperCase() : ch).join('');
+}
+
+function formatPass(parts, opts){
+  const sep = opts.separator ?? ' ';
+  let pass = parts.join(sep);
+  if (opts.addNumber){
+    pass += String(secureRandInt(1000)); // small numeric suffix
+  }
+  if (opts.addSymbol){
+    const syms = "!@#$%^&*()_+-=[]{};:'.,<>/?";
+    pass += syms[secureRandInt(syms.length)];
+  }
+  return pass;
+}
+
+function estimateEntropy(options, poolsUsed){
+  // estimate bits roughly: sum log2(poolSize) per chosen token + bits for extra digits/symbols
+  let bits = 0;
+  for (const pool of poolsUsed){
+    bits += Math.log2(Math.max(1, pool));
+  }
+  if (options.addNumber) bits += Math.log2(1000); // we used 0..999
+  if (options.addSymbol) bits += Math.log2(32); // roughly 32 symbols
+  return Math.round(bits*10)/10;
+}
+
+function showSourceInfo(loadedFromRemote){
+  const lines = [];
+  lines.push("Dizionari caricati:");
+  lines.push(`- Nomi propri: ${dict.names.length} voci`);
+  lines.push(`- Parole comuni: ${dict.nouns.length} voci`);
+  lines.push(`- Parole uniche: ${dict.uniques.length} voci`);
+  lines.push(`- Verbi/coniugazioni: ${dict.verbs.length} voci`);
+  lines.push(loadedFromRemote ? "Origine: GitHub raw (remoto)" : "Origine: liste interne (fallback)");
+  sourceInfo.textContent = lines.join(' ');
+}
+
+async function loadDictionaries(){
+  const useRemoteFlag = useRemote.checked;
+  if (!useRemoteFlag){
+    dict = JSON.parse(JSON.stringify(FALLBACK));
+    showSourceInfo(false);
+    return;
+  }
+
+  sourceInfo.textContent = "Sto provando a caricare i dizionari remoti...";
+  try {
+    // fetch all as text
+    const fetches = [
+      fetch(REMOTE_URLS.nouns).then(r => r.ok ? r.text() : Promise.reject('no')),
+      fetch(REMOTE_URLS.names).then(r => r.ok ? r.text() : Promise.reject('no')),
+      fetch(REMOTE_URLS.uniques).then(r => r.ok ? r.text() : Promise.reject('no')),
+      fetch(REMOTE_URLS.verbs).then(r => r.ok ? r.text() : Promise.reject('no'))
+    ];
+    const [nounsTxt, namesTxt, uniquesTxt, verbsTxt] = await Promise.all(fetches);
+    // parse by lines; remove empties and comments; keep lowercased where appropriate
+    dict.nouns = nounsTxt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map(s => s.split(/\s+/)[0]);
+    dict.names = namesTxt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map(s => s.split(/\s+/)[0]);
+    dict.uniques = uniquesTxt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map(s => s.split(/\s+/)[0]);
+    dict.verbs = verbsTxt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map(s => s.split(/\s+/)[0]);
+    // defensive fallbacks
+    if (dict.nouns.length < 20) dict.nouns = FALLBACK.nouns;
+    if (dict.names.length < 10) dict.names = FALLBACK.names;
+    if (dict.uniques.length < 10) dict.uniques = FALLBACK.uniques;
+    if (dict.verbs.length < 10) dict.verbs = FALLBACK.verbs;
+    showSourceInfo(true);
+  } catch (err){
+    // fallback to internal lists
+    dict = JSON.parse(JSON.stringify(FALLBACK));
+    showSourceInfo(false);
+  }
+}
+
+function buildPhraseStructure(wordCount){
+  // produce an array of tokens based on "soggetto verbo complemento"
+  // If wordCount == 3: [subject, verb, complement]
+  // For more words, append extra nouns/uniques
+  const parts = [];
+  // pick subject: prefer names, otherwise noun
+  parts.push(pickRandom(dict.names.length ? dict.names : FALLBACK.names));
+  // pick verb
+  parts.push(pickRandom(dict.verbs.length ? dict.verbs : FALLBACK.verbs));
+  // complement (noun or unique)
+  parts.push(pickRandom(dict.nouns.length ? dict.nouns : FALLBACK.nouns));
+
+  // add extra words if needed, mixing uniques/nouns
+  while (parts.length < wordCount){
+    const pool = secureRandInt(3);
+    if (pool === 0) parts.push(pickRandom(dict.uniques.length ? dict.uniques : FALLBACK.uniques));
+    else parts.push(pickRandom(dict.nouns.length ? dict.nouns : FALLBACK.nouns));
+  }
+  return parts;
+}
+
+function buildWordsOnly(wordCount){
+  const parts = [];
+  const pools = [dict.nouns, dict.uniques, dict.names];
+  for (let i=0;i<wordCount;i++){
+    const p = pools[secureRandInt(pools.length)];
+    parts.push(pickRandom(p.length ? p : FALLBACK.nouns));
+  }
+  return parts;
+}
+
+function transformPartsRandomCase(parts){
+  return parts.map(p => applyRandomCase(p));
+}
+
+function generateAndShow(){
+  const mode = modeSel.value;
+  const count = parseInt(wordsCount.value,10);
+  const opts = {
+    addNumber: addNumber.checked,
+    addSymbol: addSymbol.checked,
+    separator: separatorInput.value || ' '
+  };
+
+  let parts = [];
+  if (mode === 'phrase'){
+    parts = buildPhraseStructure(Math.max(3,count));
+  } else {
+    parts = buildWordsOnly(count);
+  }
+
+  // apply random case where appropriate
+  parts = transformPartsRandomCase(parts);
+
+  // optionally shuffle order a bit to increase variability (but keep phrase readable)
+  // we'll sometimes swap complement and extra words
+  if (mode === 'phrase' && secureRandInt(3) === 0 && parts.length>3){
+    const i = 2 + secureRandInt(parts.length-2);
+    [parts[2], parts[i]] = [parts[i], parts[2]];
+  }
+
+  const out = formatPass(parts, opts);
+  passEl.textContent = out;
+  lengthEl.textContent = `Lunghezza: ${out.length} caratteri`;
+
+  // entropy pools for estimation
+  const poolsUsed = [
+    (dict.names.length || FALLBACK.names.length),
+    (dict.verbs.length || FALLBACK.verbs.length),
+    (dict.nouns.length || FALLBACK.nouns.length)
+  ];
+  // if additional words beyond 3, assume pool ~ nouns+uniques
+  if (parts.length > 3){
+    const extras = parts.length - 3;
+    for (let i=0;i<extras;i++){
+      poolsUsed.push((dict.nouns.length + dict.uniques.length) || (FALLBACK.nouns.length+FALLBACK.uniques.length));
+    }
+  }
+  const bits = estimateEntropy(opts, poolsUsed);
+  bitsEl.textContent = `Entropia stimata: ~${bits} bit`;
+}
+
+generateBtn.addEventListener('click', async () => {
+  generateBtn.disabled = true;
+  await loadDictionaries(); // ensure dicts loaded or fallback
+  generateAndShow();
+  generateBtn.disabled = false;
+});
+
+copyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(passEl.textContent);
+    copyBtn.textContent = "Copiato!";
+    setTimeout(()=>copyBtn.textContent="Copia",1000);
+  } catch (e){
+    copyBtn.textContent = "Errore copia";
+    setTimeout(()=>copyBtn.textContent="Copia",1000);
+  }
+});
+
+entropyBtn.addEventListener('click', () => {
+  // quick recompute of entropy display by simulating pools used for current mode & count
+  const mode = modeSel.value;
+  const count = parseInt(wordsCount.value,10);
+  const opts = { addNumber: addNumber.checked, addSymbol: addSymbol.checked };
+  const poolsUsed = [];
+  if (mode === 'phrase'){
+    poolsUsed.push((dict.names.length || FALLBACK.names.length));
+    poolsUsed.push((dict.verbs.length || FALLBACK.verbs.length));
+    poolsUsed.push((dict.nouns.length || FALLBACK.nouns.length));
+    for (let i=3;i<count;i++){
+      poolsUsed.push((dict.nouns.length + dict.uniques.length) || (FALLBACK.nouns.length+FALLBACK.uniques.length));
+    }
+  } else {
+    for (let i=0;i<count;i++){
+      poolsUsed.push((dict.nouns.length + dict.uniques.length + dict.names.length) || (FALLBACK.nouns.length+FALLBACK.uniques.length+FALLBACK.names.length));
+    }
+  }
+  const bits = estimateEntropy(opts, poolsUsed);
+  alert(`Entropia stimata: ~${bits} bit\n(questa è una stima basata sulle dimensioni dei dizionari usati)`);
+});
+
+// comic controls
+loadXkcd.addEventListener('click', async () => {
+  // load xkcd 936 (raw image url) — using the official xkcd JSON to find image might be overkill; we hardcode known image path for 936
+  // Note: if remote blocked by CORS, user can save image locally and drop it in.
+  const imgUrl = 'https://imgs.xkcd.com/comics/password_strength.png';
+  comicImg.src = imgUrl;
+  comicImg.style.display = 'block';
+});
+
+clearComic.addEventListener('click', () => {
+  comicImg.src = '';
+  comicImg.style.display = 'none';
+});
+
+// initial load: attempt to prefetch (but only if checkbox is checked)
+(async function init(){
+  wordsCountLabel.textContent = wordsCount.value;
+  if (useRemote.checked) {
+    // try to load, but don't block UI
+    try { await loadDictionaries(); } catch(e) { /* ignored */ }
+  } else {
+    dict = JSON.parse(JSON.stringify(FALLBACK));
+    showSourceInfo(false);
+  }
+})();
+</script>
+</body>
+</html>
