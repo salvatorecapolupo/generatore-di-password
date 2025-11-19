@@ -2,6 +2,8 @@
 
 Questo documento spiega i concetti tecnici e i principi di sicurezza utilizzati nel generatore di password, con riferimento ai temi del corso di **Sistemi e Reti**.
 
+Link al tool di generazione password: (generatore-di-password)[https://salvatorecapolupo.github.io/generatore-di-password/]
+
 ## 📌 1. Obiettivo del progetto
 
 Realizzare un **generatore di passphrase sicure**, memorabili e robuste, che utilizza dizionari di parole italiane per generare frasi casuali secondo le linee guida della famosa vignetta XKCD #936.
