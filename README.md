@@ -2,7 +2,7 @@
 
 Questo documento spiega i concetti tecnici e i principi di sicurezza utilizzati nel generatore di password, con riferimento ai temi del corso di **Sistemi e Reti**.
 
-Link al tool di generazione password: (https://salvatorecapolupo.github.io/generatore-di-password/)Generaturi password
+Link al tool di generazione password: (https://salvatorecapolupo.github.io/generatore-di-password/)
 
 ## 📌 1. Obiettivo del progetto
 
