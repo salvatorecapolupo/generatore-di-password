@@ -1,4 +1,4 @@
-# README — Generatore di Password Sicure (Approccio "Passphrase" stile XKCD)
+# README — Generatore di Password Sicure
 
 Questo documento spiega i concetti tecnici e i principi di sicurezza utilizzati nel generatore di password, con riferimento ai temi del corso di **Sistemi e Reti**.
 
