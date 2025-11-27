@@ -51,7 +51,7 @@ function calcola_entropia_tempo_di_cracking(dizionario) {
     }
 
     const entropy = entropyDaPassphrase(pwd, dizionario);
-    const risultato = timeToCrack(entropy, 1e10, { average: true });
+    const risultato = timeToCrack(entropy, 1000, { average: true });
 
     document.getElementById("outEntropy").textContent = entropy.toFixed(2) + " bit";
 
