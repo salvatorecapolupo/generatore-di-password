@@ -20,7 +20,9 @@ var dizionario = [
 
 function generaPassword(dizionario) {
     let passphrase = [];
-    for (let i = 0; i < 4; i++) {
+    let MAX_PAROLE = parseInt( document.getElementById("digit172563").value );
+    
+    for (let i = 0; i < MAX_PAROLE; i++) {
         const random = Math.floor(Math.random() * dizionario.length);
         passphrase.push(dizionario[random]);
     }
