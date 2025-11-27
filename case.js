@@ -74,7 +74,6 @@ function timeToCrack(entropyBits, guessesPerSecond = 1e10, options = {}) {
   }
 
   // Numero medio di tentativi necessari per indovinare la password
-  // 2^(n) = spazio totale; valore medio = metà delle possibilità
   const attempts = Math.pow(2, entropyBits - 1);
 
   // Tempo in secondi
@@ -88,13 +87,13 @@ function timeToCrack(entropyBits, guessesPerSecond = 1e10, options = {}) {
   const years = days / 365.25;      // anno medio con bisestili
 
   return {
-    attempts,
-    seconds,
-    minutes,
-    hours,
-    days,
-    months,
-    years
+    attempts: Math.round(attempts),
+    seconds: parseFloat(seconds.toFixed(1)),
+    minutes: parseFloat(minutes.toFixed(1)),
+    hours: parseFloat(hours.toFixed(1)),
+    days: parseFloat(days.toFixed(1)),
+    months: parseFloat(months.toFixed(1)),
+    years: parseFloat(years.toFixed(1))
   };
 }
 
