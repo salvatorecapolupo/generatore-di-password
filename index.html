@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title> Generatore di password &#x1F512; </title>
+
+    <link rel="stylesheet" href="gibson.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>Generatore Password</h1>
+
+        <div class="controls">
+            <button id="genera">Genera una nuova password sicura</button>
+            <button id="copia">Copia password</button>
+        </div>
+
+        <input id="output" type="text" readonly placeholder="La password verrà mostrata qui: clicca per generarla. ">
+
+        <p> Entropia: <span id="outEntropy">-</span></p>
+        <p> Tempo per craccare la password: <span id="outTime">-</span></p>
+
+        <p> Parole del dizionario: </p>
+        <pre id="listaDizionario"></pre>
+        
+        <div class="vignetta">
+            <img src="password_strength_2x.png" alt="Vignetta XKCD: https://xkcd.com/936/" class="responsive-img">
+        </div>
+
+        <footer>
+            <p> 
+                <small>
+                Generatore di password secondo la vignetta XKCD 936. 
+                Sicuro, semplice e <strong></strong>facile da ricordare.
+                La password non viene memorizzata nel server ma solo nel tuo browser. 
+                </small>
+            </p>
+        </footer>
+    </div>
+
+    <script src="./case.js?v=1.1"></script>
+</body>
+
+</html>
