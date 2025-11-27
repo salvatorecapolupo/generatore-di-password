@@ -136,7 +136,7 @@ function calcola_entropia_tempo_di_cracking(dizionario) {
 
     var tmp = "";
     for (const [unit, value] of Object.entries(risultato)) {
-       tmp = tmp + (`${unit}: ${value.toFixed(6)}`);
+       tmp = tmp + (`${unit}: ${value.toFixed()}`);
     }
 document.getElementById("outTime").textContent = tmp;
 };
