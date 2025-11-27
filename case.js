@@ -15,8 +15,10 @@ var dizionario = [
     "sale","sasso","sedia","sole","spada","stella",
     "tigre","torre",
     "vento","verde","viola",
-    "zampa"
+    "zampa", "zattera"
 ];
+
+dizionario = dizionario.sort(() => 0.5 - Math.random()).slice(0, 10);
 
 function generaPassword(dizionario) {
     let passphrase = [];
