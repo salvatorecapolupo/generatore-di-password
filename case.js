@@ -61,44 +61,43 @@ function formatLargeNumber(value) {
 // guessesPerSecond: tentativi dell'attaccante al secondo (es. 1e10)
 // options.average (default true): se true usa 2^(entropy-1) come tentativi medi
 function timeToCrack(entropyBits, guessesPerSecond = 1e10, options = {}) {
-  const average = options.average !== undefined ? options.average : true;
-
-  // validate
-  if (!(Number.isFinite(entropyBits) && entropyBits > 0)) {
-    throw new Error("entropyBits deve essere un numero positivo");
+  if (entropyBits <= 0) {
+    return {
+      seconds: 0,
+      minutes: 0,
+      hours: 0,
+      days: 0,
+      months: 0,
+      years: 0,
+      attempts: 1
+    };
   }
-  if (!(Number.isFinite(guessesPerSecond) && guessesPerSecond > 0)) {
-    throw new Error("guessesPerSecond deve essere un numero positivo");
-  }
 
-  // log10 of seconds = log10(2^(exp)) - log10(guessesPerSecond)
-  // where exp = entropyBits - 1 (media) oppure entropyBits (peggiore)
-  const exp = average ? (entropyBits - 1) : entropyBits;
-  const log10_2 = Math.LOG10E * Math.log(2); // equival. a Math.log10(2)
-  // safer: Math.log10(2) may be used if available
-  const log10_time_seconds = exp * Math.log10(2) - Math.log10(guessesPerSecond);
+  // Numero medio di tentativi necessari per indovinare la password
+  // 2^(n) = spazio totale; valore medio = metà delle possibilità
+  const attempts = Math.pow(2, entropyBits - 1);
 
-  // time in seconds may be huge -> use powers of 10
-  const timeSeconds = Math.pow(10, log10_time_seconds);
+  // Tempo in secondi
+  const seconds = attempts / guessesPerSecond;
 
-  // convert to years (seconds per year)
-  const secondsPerYear = 60 * 60 * 24 * 365.2425;
-  const timeYears = timeSeconds / secondsPerYear;
-
-  // format human readable
-  const human = formatLargeNumber(timeYears) + " years";
+  // Conversioni
+  const minutes = seconds / 60;
+  const hours = seconds / 3600;
+  const days = seconds / 86400;
+  const months = days / 30.44;      // media mesi anno
+  const years = days / 365.25;      // anno medio con bisestili
 
   return {
-    years: timeYears,
-    seconds: timeSeconds,
-    humanReadable: human,
-    raw: {
-      entropyBits,
-      guessesPerSecond,
-      average
-    }
+    attempts,
+    seconds,
+    minutes,
+    hours,
+    days,
+    months,
+    years
   };
 }
+
 
 // se hai N parole e prendi k parole (es. k = 4 nella vignetta XKCD)
 function entropyFromDictionary(N, k) {
