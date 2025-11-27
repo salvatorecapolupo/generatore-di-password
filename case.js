@@ -1,4 +1,4 @@
-const dizionario = [
+var dizionario = [
     "acqua", "albero", "ambra", "amico", "angelo",
     "barca", "bello", "blu", "buca",
     "caffè", "cane", "canto", "casa", "chiave", "cielo", "colle",
