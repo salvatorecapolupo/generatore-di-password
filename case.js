@@ -18,7 +18,7 @@ var dizionario = [
     "zampa", "zattera"
 ];
 
-dizionario = dizionario.sort(() => 0.5 - Math.random()).slice(0, 10);
+dizionario = dizionario.sort(() => 0.5 - Math.random()).slice(0, dizionario.length);
 
 function generaPassword(dizionario) {
     let passphrase = [];
