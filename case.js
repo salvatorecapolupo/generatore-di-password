@@ -130,7 +130,7 @@ function calcola_entropia_tempo_di_cracking(dizionario) {
 
     // 3) Mostra in pagina
     document.getElementById("outEntropy").textContent = entropy.toFixed(2) + " bit";
-    document.getElementById("outTime").textContent = risultato.humanReadable;
+    document.getElementById("outTime").textContent = risultato;
 };
 
 function mostraDizionario() {
