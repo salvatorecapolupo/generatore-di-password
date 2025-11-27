@@ -1,4 +1,3 @@
-function generaPassword() {
 const dizionario = [
     "acqua", "albero", "ambra", "amico", "angelo",
     "barca", "bello", "blu", "buca",
@@ -19,6 +18,7 @@ const dizionario = [
     "zampa"
 ];
 
+function generaPassword(dizionario) {
     let passphrase = [];
     for (let i = 0; i < 4; i++) {
         const random = Math.floor(Math.random() * dizionario.length);
@@ -29,7 +29,7 @@ const dizionario = [
 }
 
 document.getElementById("genera").addEventListener("click", () => {
-    document.getElementById("output").value = generaPassword();
+    document.getElementById("output").value = generaPassword(dizionario);
     calcola_entropia_tempo_di_cracking(dizionario);
 });
 
