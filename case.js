@@ -54,11 +54,11 @@ function calcola_entropia_tempo_di_cracking(dizionario) {
     const entropy = entropyDaPassphrase(pwd, dizionario);
     const risultato = timeToCrack(entropy, 1000, { average: true });
 
-    document.getElementById("outEntropy").textContent = entropy.toFixed(2) + " bit";
+    document.getElementById("outEntropy").textContent = entropy.toFixed(1) + " bit";
 
     // Formattazione leggibile
     const tmp = Object.entries(risultato)
-        .map(([unit, value]) => `${unit}: ${formatLargeNumber(value)}`)
+        .map(([unit, value]) => `${unit}: ${formatLargeNumber(value)}, `)
         .join(", ");
 
     document.getElementById("outTime").textContent = tmp;
