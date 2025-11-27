@@ -17,40 +17,54 @@
 
         <h1>Generatore Password</h1>
 
-        <div class="controls">
-            <button id="genera">Genera una nuova password sicura</button>
-            <button id="copia">Copia password</button>
+    <form>
+        <div class="controls form-group">
+            <button id="genera" class="form-control">Genera password sicura</button>
+            <button id="copia" class="form-control">Copia password</button>
         </div>
 
+        <div class="controls form-group">
         <label for="digit">La tua nuova password:</label>
-        <input id="output" type="text" readonly placeholder="La password verrà mostrata qui: clicca per generarla. ">
+        <input id="output" type="text" readonly class="form-control" placeholder="La password verrà mostrata qui: clicca per generarla. ">
+        </div>
 
+        <div class="controls form-group">
         <label for="digit">Seleziona il numero di parole:</label>
-        <select id="digit172563" name="digit172563">
+        <select id="digit172563" name="digit172563" class="form-control">
           <option value="1">1</option>
           <option value="2">2</option>
-          <option value="3" selected>3</option>
-          <option value="4">4</option>
+          <option value="3">3</option>
+          <option value="4" selected>4</option>
           <option value="5">5</option>
           <option value="6">6</option>
         </select>
-        
-        <p> Entropia: <span id="outEntropy">-</span></p>
-        <p> Tempo per craccare la password: <span id="outTime">-</span></p>
-
-        <p> Parole del dizionario: </p>
-        <pre id="listaDizionario"></pre>
-        
-        <div class="vignetta">
-            <img src="password_strength_2x.png" alt="Vignetta XKCD: https://xkcd.com/936/" class="responsive-img">
         </div>
 
+        <div class="controls form-group">
+            <p> Entropia: <span class="form-control" id="outEntropy">-</span></p>
+            <p> Tempo per craccare la password: <span class="form-control" id="outTime">-</span></p>
+        </div>
+
+        <div class="controls form-group">
+            <p> Parole del dizionario: </p>
+            <pre class="form-control" id="listaDizionario"></pre>
+        </div>
+
+        <div class="form-group">
+            <div class="vignetta">
+                <img src="password_strength_2x.png" alt="Vignetta XKCD: https://xkcd.com/936/" class="responsive-img">
+            </div>
+        </div>
+    </form>
+        
         <footer>
             <p> 
                 <small>
-                Generatore di password secondo la vignetta XKCD 936. 
-                Sicuro, semplice e <strong></strong>facile da ricordare.
-                La password non viene memorizzata nel server ma solo nel tuo browser. 
+                Generatore di password sulla base dei criteri di XKCD 936. 
+                Sicuro e <strong>facile da ricordare</strong>.
+                La password non viene memorizzata nel server, ma solo nel tuo browser. 
+                Questo è un prototipo sperimentale. Le password dovrebbero essere cambiate periodicamente,
+                e gli account protetti con sistemi più avanzati come la 2FA. 
                 </small>
             </p>
         </footer>
