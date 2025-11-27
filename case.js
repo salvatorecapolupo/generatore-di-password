@@ -53,15 +53,18 @@ function calcola_entropia_tempo_di_cracking(dizionario) {
 
     const entropy = entropyDaPassphrase(pwd, dizionario);
     const risultato = timeToCrack(entropy, 1000, { average: true });
+    // ... dopo che hai calcolato `risultato`
+    const bestTime = formatCrackTime(risultato.seconds);
+    document.getElementById("outTime").textContent = bestTime;
 
     document.getElementById("outEntropy").textContent = entropy.toFixed(1) + " bit";
 
-    // Formattazione leggibile
-    const tmp = Object.entries(risultato)
-        .map(([unit, value]) => `${unit}: ${formatLargeNumber(value)}, `)
-        .join(", ");
+    // Formattazione illeggibile
+    //const tmp = Object.entries(risultato)
+        //.map(([unit, value]) => `${unit}: ${formatLargeNumber(value)}, `)
+        //.join(", ");
 
-    document.getElementById("outTime").textContent = tmp;
+    //document.getElementById("outTime").textContent = tmp;
 }
 
 // Utility
@@ -88,7 +91,7 @@ function entropyDaPassphrase(passphrase, dizionario) {
     return parole.length * Math.log2(dizionario.length);
 }
 
-function timeToCrack(entropyBits, guessesPerSecond = 1e10, options = {}) {
+function timeToCrack(entropyBits, guessesPerSecond = 1000, options = {}) {
     if (entropyBits <= 0) {
         return { seconds: 0, minutes: 0, hours: 0, days: 0, months: 0, years: 0, attempts: 1 };
     }
@@ -104,6 +107,32 @@ function timeToCrack(entropyBits, guessesPerSecond = 1e10, options = {}) {
         years: parseFloat((seconds/86400/365.25).toFixed(1))
     };
 }
+
+function formatCrackTime(seconds) {
+    if (!isFinite(seconds) || seconds <= 0) {
+        return "0 secondi";
+    }
+
+    const units = [
+        { name: "anni",   value: 365.25 * 24 * 3600 },
+        { name: "mesi",   value: 30.44 * 24 * 3600 },
+        { name: "giorni", value: 24 * 3600 },
+        { name: "ore",    value: 3600 },
+        { name: "minuti", value: 60 },
+        { name: "secondi", value: 1 }
+    ];
+
+    for (const unit of units) {
+        if (seconds >= unit.value) {
+            const amount = seconds / unit.value;
+            // Usa toFixed per avere un numero con decimali decenti
+            return `${amount.toFixed(1)} ${unit.name}`;
+        }
+    }
+
+    return "0 secondi";
+}
+
 
 // Eventi
 document.getElementById("genera").addEventListener("click", () => {
