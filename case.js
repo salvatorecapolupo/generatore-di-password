@@ -132,6 +132,12 @@ function calcola_entropia_tempo_di_cracking(dizionario) {
     document.getElementById("outEntropy").textContent = entropy.toFixed(2) + " bit";
     document.getElementById("outTime").textContent = risultato;
     console.log(risultato);
+
+    var tmp = "";
+    for (const [unit, value] of Object.entries(x)) {
+       tmp = tmp + (`${unit}: ${value.toFixed(6)}`);
+    }
+document.getElementById("outTime").textContent = tmp;
 };
 
 function mostraDizionario() {
@@ -148,3 +154,5 @@ function mostraDizionario() {
     // Mostra a schermo
     container.textContent = testo;
 }
+
+
